@@ -14,7 +14,9 @@ namespace eCommerce.Infrastructure.DbContext
         public DapperDbContext(IConfiguration configuration)
         {
             _configuration = configuration;
-            string? connectionString = _configuration.GetConnectionString("PstgresConnection");
+            string connectionStringTemplate = _configuration.GetConnectionString("PstgresConnection")!;
+            string connectionString = connectionStringTemplate.Replace("$POSTGRES_HOST", Environment.GetEnvironmentVariable("POSTGRES_HOST"))
+                                                           .Replace("$POSTGRES_PASSWORD", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"));
             _dbConnection = new NpgsqlConnection(connectionString);
         }
         public IDbConnection DbConnection => _dbConnection;
