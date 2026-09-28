@@ -3,9 +3,6 @@ using eCommerce.Core;
 using eCommerce.API.Middlewares;
 using System.Text.Json.Serialization;
 using eCommerce.Core.Mappers;
-using AutoMapper;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.AspNetCore;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,38 +11,50 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure();
 builder.Services.AddCore();
 
-//Add Controllers 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+// Add controllers to the service collection
+builder.Services.AddControllers().AddJsonOptions(options => {
+  options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-builder.Services.AddAutoMapper(cfg =>
-{
-    cfg.LicenseKey = "YOUR_LICENSE_KEY";
-},   typeof(ApplicationUserMappingProfile).Assembly);
+
+builder.Services.AddAutoMapper(typeof(ApplicationUserMappingProfile).Assembly);
+
+//FluentValidations
 builder.Services.AddFluentValidationAutoValidation();
+
+
+//Add API explorer services
 builder.Services.AddEndpointsApiExplorer();
+
+//Add swagger generation services to create swagger specification
 builder.Services.AddSwaggerGen();
-builder.Services.AddCors(opt =>
+
+//Add cors services
+builder.Services.AddCors(options =>
 {
-    opt.AddDefaultPolicy( policy =>
-    {
-        policy.WithOrigins("http://localhost:4200");
-        policy.AllowAnyMethod();
-        policy.AllowAnyHeader();
-    });
+  options.AddDefaultPolicy(builder => {
+    builder.WithOrigins("http://localhost:4200")
+    .AllowAnyMethod()
+    .AllowAnyHeader();
+  });
 });
+
+//Build the web application
 var app = builder.Build();
-app.UseExceptionHandlerMiddleware();
-//Add Routing
+
+app.UseExceptionHandlingMiddleware();
+
+//Routing
 app.UseRouting();
-//Add Authentication and Authorization
-app.UseAuthorization();
-app.UseAuthentication();
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwagger(); //Adds endpoint that can serve the swagger.json
+app.UseSwaggerUI(); //Adds swagger UI (interactive page to explore and test API endpoints)
 app.UseCors();
-//Add Endpoints
-app.MapGet("/", () => "Hello World!");
+
+
+//Auth
+app.UseAuthentication();
+app.UseAuthorization();
+
+//Controller routes
 app.MapControllers();
+
 app.Run();

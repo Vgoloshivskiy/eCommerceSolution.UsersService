@@ -1,25 +1,30 @@
-﻿using eCommerce.Core.Entities.DTO;
+﻿using eCommerce.Core.DTO;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace eCommerce.Core.Validators
+namespace eCommerce.Core.Validators;
+
+public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public class RegisterRequestValidator :AbstractValidator<RegisterRequest>
-    {
-        public RegisterRequestValidator()
-        {
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email format.");
-            RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required.");
-            RuleFor(x => x.Gender)
-                .IsInEnum().WithMessage("Gender is wrong.");
-            RuleFor(x => x.PersonName)
-                .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(50).WithMessage("Name is too long.");
-        }
-    }
+  public RegisterRequestValidator()
+  {
+    //Email
+    RuleFor(temp => temp.Email)
+      .NotEmpty().WithMessage("Email is required")
+      .EmailAddress().WithMessage("Invalid email address format")
+      ;
+
+    //Password
+    RuleFor(temp => temp.Password)
+      .NotEmpty().WithMessage("Password is required")
+      ;
+
+    // Validate the PersonName property.
+    RuleFor(request => request.PersonName)
+        .NotEmpty().WithMessage("PersonName can't be blank")
+        .Length(1, 50).WithMessage("Person Name should be 1 to 50 characters long");
+
+    // Validate the Gender property.
+    RuleFor(request => request.Gender)
+        .IsInEnum().WithMessage("Invalid gender option");
+  }
 }
